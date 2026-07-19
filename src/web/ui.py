@@ -126,9 +126,9 @@ def get_db_email_list():
         for e in emails:
             label = f"#{e['id']} | {e.get('subject', '(无主题)')[:30]} | {e.get('sender', '')[:25]}"
             choices.append((label, e["id"]))
-        return gr.update(choices=choices) if choices else gr.update(choices=[])
+        return gr.Dropdown(choices=choices) if choices else gr.Dropdown(choices=[])
     except Exception:
-        return gr.update(choices=[])
+        return gr.Dropdown(choices=[])
 
 
 def _format_report(result: dict) -> str:
@@ -188,17 +188,8 @@ def _format_report(result: dict) -> str:
     return "\n".join(lines)
 
 
-def create_ui() -> gr.Blocks:
-    """
-    创建 Gradio UI 界面
-    
-    设计参考 TREEHOLE 项目的浅系风格：
-    - 浅色背景 (#F5F5F7)
-    - 简洁排版
-    - 无多余装饰
-    """
-    # TREEHOLE 风格自定义 CSS
-    custom_css = """
+# TREEHOLE 风格自定义 CSS（模块级常量，传递给 launch()）
+_CUSTOM_CSS = """
     :root {
         --bg: #F5F5F7;
         --fg: #1D1D1F;
@@ -254,14 +245,18 @@ def create_ui() -> gr.Blocks:
     }
     """
 
+
+def create_ui() -> gr.Blocks:
+    """
+    创建 Gradio UI 界面
+
+    设计参考 TREEHOLE 项目的浅系风格：
+    - 浅色背景 (#F5F5F7)
+    - 简洁排版
+    - 无多余装饰
+    """
     with gr.Blocks(
-        css=custom_css,
         title="PhishingDetector - AI钓鱼邮件检测",
-        theme=gr.themes.Default(
-            primary_hue="blue",
-            neutral_hue="slate",
-            font=[gr.themes.GoogleFont("Noto Sans SC"), "sans-serif"],
-        ),
     ) as app:
         # 标题
         gr.Markdown("# PhishingDetector")
@@ -310,7 +305,6 @@ def create_ui() -> gr.Blocks:
                     interactive=False,
                     lines=12,
                     elem_classes=["workflow-log"],
-                    show_copy_button=True,
                 )
 
                 # 绑定分析按钮
@@ -378,4 +372,10 @@ def launch_ui(share: bool = False):
         server_port=7860,
         share=share,
         show_error=True,
+        css=_CUSTOM_CSS,
+        theme=gr.themes.Default(
+            primary_hue="blue",
+            neutral_hue="slate",
+            font=[gr.themes.GoogleFont("Noto Sans SC"), "sans-serif"],
+        ),
     )

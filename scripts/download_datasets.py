@@ -185,14 +185,23 @@ def process_datasets():
             for col in df.columns:
                 if col.lower() in ("text", "email", "content", "body", "email_text"):
                     text_col = col
-                if col.lower() in ("label", "is_phishing", "phishing", "class"):
+                if col.lower() in ("label", "is_phishing", "phishing", "class", "email_type", "type"):
                     label_col = col
+
+            # 字符串标签到整数的映射（phishing=1, 正常=0）
+            label_map = {
+                "phishing": 1, "spam": 1, "1": 1, 1: 1, 1.0: 1, True: 1,
+                "legitimate": 0, "ham": 0, "safe": 0, "normal": 0, "0": 0, 0: 0, 0.0: 0, False: 0,
+            }
 
             if text_col and label_col:
                 for _, row in df.iterrows():
+                    raw_label = row[label_col]
+                    # 统一转换为 0/1 整数
+                    label_val = label_map.get(raw_label, label_map.get(str(raw_label).lower().strip(), 0))
                     all_records.append({
                         "text": str(row[text_col]),
-                        "label": int(row[label_col]),
+                        "label": int(label_val),
                         "source": csv_file.stem,
                     })
                 logger.info(f"  已提取 {len(df)} 条记录")
